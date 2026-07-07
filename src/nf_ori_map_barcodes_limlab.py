@@ -94,6 +94,15 @@ def get_coords_to_barcodes(fastq_in, n_fastq,bamfile,n_bam,mapq=30,baseq=30,ciga
             
             ## filter reads with too low of map quality and exact cigar match if provided
             else:
+                ## Added by Lim
+                for tags in read.tags:
+                    # NM: Edit distance in BWA alignment; must be perfect match
+                    if tags[0]=='NM':
+                        if tags[1] > 0: continue
+                    # MD: Mismatch positions/type in BWA alignment; must be full length == designed CRS length
+                    elif tags[0]=='MD':
+                        if tags[1] != 220: continue
+                
                 if cigar == "":
                     if isinstance(read.reference_name, str):
                         query_to_coords[read.query_name] = read.reference_name
