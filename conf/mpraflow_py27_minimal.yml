@@ -1,0 +1,13 @@
+name: mpraflow_py27_minimal
+channels:
+  - bioconda
+  - defaults
+  - conda-forge
+dependencies:
+  - python=2.7.17
+  - samtools
+  - pysam
+  - bcftools
+  - libblas
+  - libcblas
+  - libopenblas

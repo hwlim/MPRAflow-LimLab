@@ -1,0 +1,150 @@
+# minimal version of essential top level packages
+# - tested for "association" in Mac OS
+name: mpraflow_py36_minimal
+
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bwa
+  - fastq-join
+  - fastqc
+  - r-base>=4.4.0
+  - yaml
+  - samtools
+  - pandas
+  - pysam
+  - pyarrow
+  - seaborn
+  - re2
+  - matplotlib
+  - numpy
+  - numpy-base
+  - gsl
+  - gst-plugins-base
+  - python
+  - python-dateutil
+  - scikit-learn
+  - scipy
+  - picard
+  - tqdm
+  - dask
+  - biopython
+
+  # - _libgcc_mutex
+  # - _r-mutex
+  # - arrow-cpp
+  # - binutils_impl_linux-64
+  # - binutils_linux-64
+  # - biopython
+  # - blas
+  # - bokeh
+  # - boost-cpp
+  # - brotli
+  # - bwidget
+  # - bzip2
+  # - ca-certificates
+  # - cairo
+  # - certifi
+  # - click
+  # - cloudpickle
+  # - curl
+  # - cycler
+  # - cytoolz
+  # - dask
+  # - dask-core
+  # - dbus
+  # - distributed
+  # - double-conversion
+  # - expat
+  # - font-ttf-dejavu-sans-mono
+  # - fontconfig
+  # - freetype
+  # - fribidi
+  # - fsspec
+  # - gcc_impl_linux-64
+  # - gcc_linux-64
+  # - gflags
+  # - gfortran_impl_linux-64
+  # - gfortran_linux-64
+  # - glib
+  # - glog
+  # - graphite2
+  # - gstreamer
+  # - gxx_impl_linux-64
+  # - gxx_linux-64
+  # - harfbuzz
+  # - heapdict
+  # - htslib
+  # - icu
+  # - intel-openmp
+  # - jinja2
+  # - joblib
+  # - jpeg
+  # - kiwisolver
+  # - krb5
+  # - libboost
+  # - libcurl
+  # - libdeflate
+  # - libedit
+  # - libevent
+  # - libffi
+  # - libgcc-ng
+  # - libgfortran-ng
+  # - libpng
+  # - libprotobuf
+  # - libssh2
+  # - libstdcxx-ng
+  # - libtiff
+  # - libuuid
+  # - libxcb
+  # - libxml2
+  # - locket
+  # - lz4-c
+  # - make
+  # - markupsafe
+  # - mkl
+  # - mkl-service
+  # - mkl_fft
+  # - mkl_random
+  # - msgpack-python
+  # - ncurses
+  # - olefile
+  # - openjdk
+  # - openssl
+  # - packaging
+  # - pango
+  # - parquet-cpp
+  # - partd
+  # - patsy
+  # - pcre
+  # - perl
+  # - pillow
+  # - pip
+  # - pixman
+  # - psutil
+  # - pyparsing
+  # - pyqt
+  # - pytz
+  # - pyyaml
+  # - qt
+  # - readline
+  # - setuptools
+  # - sip
+  # - six
+  # - snappy
+  # - sortedcontainers
+  # - sqlite
+  # - statsmodels
+  # - tblib
+  # - thrift-cpp
+  # - tk
+  # - tktable
+  # - toolz
+  # - tornado
+  # - wheel
+  # - xz
+  # - zict
+  # - zlib
+  # - zstd

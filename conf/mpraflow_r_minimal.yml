@@ -1,0 +1,27 @@
+# minimal requirment in mac
+# prepared by Lim; 4/4/2025
+name: mpraflow_r_minimal
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-base>4.4
+  - _libgcc_mutex
+  - gettext
+  - glib
+  - libgcc
+  - r-tidyverse
+  - r-bh
+  - r-dichromat
+  - r-lazyeval
+  - r-plyr
+  - r-reshape2
+  - xz
+
+
+# unavailble or next version installed
+#  - libstdcxx-ng
+#  - pcre
+#  - jpeg
+#  - libgcc-ng
