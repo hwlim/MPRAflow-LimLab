@@ -198,6 +198,7 @@ summary['Pipeline Version'] = params.version
 summary['Run Name']         = custom_runName ?: workflow.runName
 
 //summary['Thread fqdump']    = params.threadfqdump ? 'YES' : 'NO'
+summary['Data dir']         = params.dir
 summary['Output dir']       = params.outdir
 summary['Working dir']      = workflow.workDir
 //summary['Container Engine'] = workflow.containerEngine
@@ -214,6 +215,7 @@ summary['reads']            = (params.no_umi ? reads_noUMI : reads)
 summary['UMIs']             = (params.no_umi ? "Reads without UMI" : "Reads with UMI")
 summary['BC length']        = params.bc_length
 summary['BC threshold']     = params.thresh
+summary['UMI length']     = params.umi_length
 summary['mprAnalyze']       = params.mpranalyze
 
 if(params.email) summary['E-mail Address'] = params.email
@@ -246,7 +248,7 @@ if (!params.no_umi) {
         tag "make idx"
         label 'longtime'
 
-        conda 'conf/mpraflow_py27.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_py27_minimal'
 
         input:
             tuple val(cond), val(rep), val(type), val(datasetID), file(fw_fastq), file(umi_fastq), file(rev_fastq) from reads
@@ -256,12 +258,17 @@ if (!params.no_umi) {
         shell:
             """
             #!/bin/bash
+            set -e
+            set -u
+            set -o
+
             echo $datasetID
 
             echo $fw_fastq
             echo $umi_fastq
             echo $rev_fastq
 
+            set +e
             umi_length=`zcat $umi_fastq | head -2 | tail -1 | wc -c`
             umi_length=\$(expr \$((\$umi_length-1)))
 
@@ -272,6 +279,7 @@ if (!params.no_umi) {
 
             rev_length=`zcat $rev_fastq | head -2 | tail -1 | wc -c`
             rev_length=\$(expr \$((\$rev_length-1)))
+            set -e
 
             minoverlap=`echo \${fwd_length} \${fwd_length} $bc_length | awk '{print (\$1+\$2-\$3-1 < 11) ? \$1+\$2-\$3-1 : 11}'`
 
@@ -293,7 +301,7 @@ if (params.no_umi) {
         tag "make idx"
         label 'longtime'
 
-        conda 'conf/mpraflow_py27.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_py27_minimal'
 
         input:
             tuple val(cond), val(rep),val(type),val(datasetID),file(fw_fastq), file(rev_fastq) from reads_noUMI
@@ -305,11 +313,16 @@ if (params.no_umi) {
         shell:
             """
             #!/bin/bash
+            set -e
+            set -u
+            set -o
+
             echo $datasetID
 
             echo $fw_fastq
             echo $rev_fastq
 
+            set +e
             fwd_length=`zcat $fw_fastq | head -2 | tail -1 | wc -c`
             fwd_length=\$(expr \$((\$fwd_length-1)))
 
@@ -317,6 +330,7 @@ if (params.no_umi) {
 
             rev_length=`zcat $rev_fastq | head -2 | tail -1 | wc -c`
             rev_length=\$(expr \$((\$rev_length-1)))
+            set -e
 
             minoverlap=`echo \${fwd_length} \${fwd_length} $bc_length | awk '{print (\$1+\$2-\$3-1 < 11) ? \$1+\$2-\$3-1 : 11}'`
 
@@ -343,7 +357,7 @@ if (params.no_umi) {
 process 'raw_counts'{
     label 'shorttime'
 
-    conda 'conf/mpraflow_py36.yml'
+    conda '/data/limlab/Resource/conda_env/mpraflow_py36_minimal'
 
     publishDir "$params.outdir/$cond/$rep"
 
@@ -356,6 +370,10 @@ process 'raw_counts'{
         if(params.no_umi)
             """
             #!/bin/bash
+            set -e
+            set -u
+            set -o
+
 
             samtools view -F 1 -r $datasetID $bam | \
             awk '{print \$10}' | \
@@ -366,6 +384,10 @@ process 'raw_counts'{
         else
             """
             #!/bin/bash
+            set -e
+            set -u
+            set -o
+
 
             samtools view -F 1 -r $datasetID $bam | \
             awk -v 'OFS=\\t' '{ for (i=12; i<=NF; i++) {
@@ -387,7 +409,7 @@ process 'filter_counts'{
     label 'shorttime'
     publishDir "$params.outdir/$cond/$rep"
 
-    conda 'conf/mpraflow_py27.yml'
+    conda '/data/limlab/Resource/conda_env/mpraflow_py27_minimal'
 
     input:
         tuple val(cond), val(rep),val(type),val(datasetID),file(rc) from raw_ct
@@ -422,6 +444,10 @@ process 'final_counts'{
         if(params.no_umi)
             """
             #!/bin/bash
+            set -e
+            set -u
+            set -o
+
 
             zcat $fc | awk '{print \$1}' | \
             uniq -c > ${datasetID}_counts.tsv
@@ -430,12 +456,18 @@ process 'final_counts'{
         else
             """
             #!/bin/bash
+            set -e
+            set -u
+            set -o
 
+
+            set +e
             for i in $fc; do
               echo \$(basename \$i);
               zcat \$i | cut -f 2 | sort | uniq -c | sort -nr | head;
               echo;
             done > ${params.outdir}/${cond}/${rep}/${datasetID}_freqUMIs.txt
+            set -e
 
             zcat $fc | awk '{print \$1}' | uniq -c > ${datasetID}_counts.tsv
         """
@@ -450,7 +482,7 @@ process 'dna_rna_merge_counts'{
     publishDir "$params.outdir/$cond/$rep", mode:'copy'
     label 'shorttime'
 
-    conda 'conf/mpraflow_py36.yml'
+    conda '/data/limlab/Resource/conda_env/mpraflow_py36_minimal'
 
     input:
         tuple val(cond),val(rep),val(typeA),val(typeB),val(datasetIDA),val(datasetIDB),file(countA),file(countB) from final_count_satMut.groupTuple(by: [0,1]).map{i -> i.flatten()}
@@ -478,7 +510,7 @@ if(params.mpranalyze){
         publishDir "$params.outdir/$cond/$rep", mode:'copy'
         label 'longtime'
 
-        conda 'conf/mpraflow_py36.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_py36_minimal'
 
         input:
             tuple val(cond),val(rep),val(typeA),val(typeB),val(datasetIDA),val(datasetIDB),file(countA),file(countB) from final_count.groupTuple(by: [0,1]).map{i -> i.flatten()}
@@ -500,7 +532,7 @@ if(params.mpranalyze){
         label 'longtime'
         publishDir "$params.outdir/$cond", mode:'copy'
 
-        conda 'conf/mpraflow_py36.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_py36_minimal'
 
         result = merged_ch.groupTuple(by: 0).multiMap{i ->
                                   cond: i[0]
@@ -534,7 +566,7 @@ if(params.mpranalyze){
         label 'shorttime'
         publishDir "$params.outdir/$cond", mode:'copy'
 
-        conda 'conf/mpraflow_py36.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_py36_minimal'
 
         input:
             tuple val(cond), file(table) from merged_out
@@ -557,7 +589,7 @@ if(params.mpranalyze){
         label 'shorttime'
         publishDir "$params.outdir/$cond", mode:'copy'
 
-        conda 'conf/mpraflow_py36.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_py36_minimal'
 
         input:
             tuple val(cond),file(labeled_file) from labeled_out
@@ -586,7 +618,7 @@ if(!params.mpranalyze && params.containsKey("association")){
         label 'longtime'
         publishDir "$params.outdir/$cond/$rep", mode:'copy'
 
-        conda 'conf/mpraflow_py36.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_py36_minimal'
 
         input:
             tuple val(cond), val(rep),val(typeA),val(typeB),val(datasetIDA),val(datasetIDB),file(countA),file(countB) from final_count.groupTuple(by: [0,1]).map{i -> i.flatten()}
@@ -613,7 +645,7 @@ if(!params.mpranalyze && params.containsKey("association")){
         label 'shorttime'
         publishDir "$params.outdir/$cond", mode:'copy'
 
-        conda 'conf/mpraflow_r.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_r_minimal'
 
         result = merged_ch.groupTuple(by: 0).multiMap{i ->
                                   cond: i[0]
@@ -643,7 +675,7 @@ if(!params.mpranalyze && params.containsKey("association")){
         label 'shorttime'
         publishDir "$params.outdir/$cond", mode:'copy'
 
-        conda 'conf/mpraflow_r.yml'
+        conda '/data/limlab/Resource/conda_env/mpraflow_r_minimal'
 
         result = merged_ch2.groupTuple(by: 0).multiMap{i ->
                                   cond: i[0]

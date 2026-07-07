@@ -14,6 +14,10 @@ Gracie Gordon <gracie.gordon@ucsf.edu>
 Max Schubach <max.schubach@bihealth.de>
 Sean Whalen <sean.whalen@gladstone.ucsf.edu>
 ----------------------------------------------------------------------------------------
+
+Modified by Lim:
+20241029
+    - Remove "name" from publishDir to allow output in the current foldelr
 */
 
 def helpMessage() {
@@ -196,7 +200,7 @@ if (params.label_file != null) {
     process 'count_bc' {
         tag 'count'
         label 'shorttime'
-        publishDir "${params.outdir}/${params.name}", mode:'copy'
+        publishDir "${params.outdir}", mode:'copy'
 
         input:
             file(fastq_bc) from params.fastq_bc_file
@@ -232,7 +236,7 @@ if (params.label_file == null) {
     process 'count_bc_nolab' {
         tag 'count'
         label 'shorttime'
-        publishDir "${params.outdir}/${params.name}", mode:'copy'
+        publishDir "${params.outdir}", mode:'copy'
 
         input:
             file(fastq_bc) from params.fastq_bc_file
@@ -270,7 +274,7 @@ process 'create_BWA_ref' {
     tag "make ref"
     label 'shorttime'
 
-    conda 'conf/mpraflow_py36.yml'
+    conda '/usr/local/Caskroom/mambaforge/base/envs/mpraflow_py36'
 
     input:
         file(design) from fixed_design
@@ -319,7 +323,7 @@ if (params.fastq_insertPE_file != null) {
         tag 'merge'
         label 'shorttime'
 
-        conda 'conf/mpraflow_py36.yml'
+        conda '/usr/local/Caskroom/mambaforge/base/envs/mpraflow_py36'
 
         input:
             file(fastq_insert) from R1_ch
@@ -345,7 +349,7 @@ if (params.fastq_insertPE_file != null) {
         tag "align"
         label 'longtime'
 
-        conda 'conf/mpraflow_py36.yml'
+        conda '/usr/local/Caskroom/mambaforge/base/envs/mpraflow_py36'
 
         input:
             file(design) from fixed_design
@@ -380,7 +384,7 @@ if (params.fastq_insertPE_file != null) {
         tag "align"
         label 'longtime'
 
-        conda 'conf/mpraflow_py36.yml'
+        conda '/usr/local/Caskroom/mambaforge/base/envs/mpraflow_py36'
 
         input:
             file(design) from fixed_design
@@ -413,7 +417,7 @@ if (params.fastq_insertPE_file != null) {
 process 'collect_chunks'{
     label 'shorttime'
 
-    conda 'conf/mpraflow_py36.yml'
+    conda '/usr/local/Caskroom/mambaforge/base/envs/mpraflow_py36'
 
     input:
         file sbam_listFiles from s_bam.collect()
@@ -447,9 +451,9 @@ process 'collect_chunks'{
 process 'map_element_barcodes' {
     tag "assign"
     label "shorttime"
-    publishDir "${params.outdir}/${params.name}", mode:'copy'
+    publishDir "${params.outdir}", mode:'copy'
 
-    conda 'conf/mpraflow_py36.yml'
+    conda '/usr/local/Caskroom/mambaforge/base/envs/mpraflow_py36'
 
     input:
         val(name) from params.name
@@ -464,6 +468,9 @@ process 'map_element_barcodes' {
         file "${name}_coords_to_barcodes.pickle" into map_ch
         file "${name}_barcodes_per_candidate-no_repeats-no_jackpots.feather" into count_table_ch
         file "${name}_barcode_counts.pickle"
+        file "${name}_barcodes_per_candidate.feather"
+        file "${name}_barcodes_per_candidate-no_repeats.feather"
+        file "${name}_barcodes_per_candidate-no_jackpots.feather"
     shell:
         """
         echo "test assign inputs"
@@ -490,9 +497,9 @@ process 'map_element_barcodes' {
 process 'filter_barcodes' {
     tag "$filter"
     label "shorttime"
-    publishDir "${params.outdir}/${params.name}", mode:'copy'
+    publishDir "${params.outdir}", mode:'copy'
 
-    conda 'conf/mpraflow_py36.yml'
+    conda '/usr/local/Caskroom/mambaforge/base/envs/mpraflow_py36'
 
     input:
         val(min_cov) from params.min_cov
